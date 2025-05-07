@@ -37,7 +37,7 @@ ifeq ($(config),debug)
 TARGETDIR = build/bin/Debug-windows-x86_64/tfss_test_tools
 TARGET = $(TARGETDIR)/tfss_test_tools.exe
 OBJDIR = build/obj/Debug-windows-x86_64/tfss_test_tools
-DEFINES += -DTEST_READ -DDEBUG
+DEFINES += -DDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -g
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64
@@ -46,7 +46,7 @@ else ifeq ($(config),release)
 TARGETDIR = build/bin/Release-windows-x86_64/tfss_test_tools
 TARGET = $(TARGETDIR)/tfss_test_tools.exe
 OBJDIR = build/obj/Release-windows-x86_64/tfss_test_tools
-DEFINES += -DTEST_READ -DNDEBUG
+DEFINES += -DNDEBUG
 ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -m64 -O2
 ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CPPFLAGS) -m64 -O2
 ALL_LDFLAGS += $(LDFLAGS) -L/usr/lib64 -m64 -s
