@@ -21,8 +21,38 @@ void filter_up(uint8_t *filtered, const uint8_t *scanline, const uint8_t *prev, 
 void filter_avg(uint8_t *filtered, const uint8_t *scanline, const uint8_t *prev, size_t length, int bpp);
 void filter_paeth(uint8_t *filtered, const uint8_t *scanline, const uint8_t *prev, size_t length, int bpp);
 
+typedef enum 
+{
+	TF_R8,
+	TF_RG8,
+	TF_RGB233,
+	TF_RGB332,
+	TF_RGB8,
+	TF_RGB565,
+	TF_RGBA8,
+	TF_RGBA4444,
+	TF_RGBA5551,
+	TF_RGBA1010102,
+	TF_R16F,
+	TF_RG16F,
+	TF_RGB16F,
+	TF_RGBA16F,
+	TF_RGBA16,
+	TF_BCN1,
+	TF_BCN2,
+	TF_BCN3,
+	TF_BCN5,
+	TF_BCN6N,
+	TF_BCN7,
+	TF_ETC1,
+	TF_ETC2,
+	TF_ETC4,
+	TF_ASTC,	// pray
+	TF_COMPRESS = 1 << 8
+} tfss_formats;
 
-void save_tfss_zstd(const char* name, uint8_t* data, int bytes_per_pixel, int width, int height, int image_format, char texture_name[32], int mip_count, int array_size, int compression_level);
-void load_tfss_zstd(const char* name, uint8_t* data, int* bytes_per_pixel, int* width, int* height);
+typedef int (*mipmapper)(const uint8_t* in, uint8_t* out, uint32_t bpp, uint32_t wh[2]);
+int write_tfss(const char* name, char* data, uint32_t flags, uint32_t wh_dl[3], uint8_t format, uint8_t mip_count, uint8_t compression, uint8_t faces, mipmapper mipmap);
+int read_tfss(const char* name, char* out, uint32_t* flags, uint32_t wh_dl[3], uint8_t* format, uint8_t* mip_count, uint8_t* faces);
 
 #endif

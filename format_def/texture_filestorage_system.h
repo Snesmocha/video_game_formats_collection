@@ -3,93 +3,92 @@
 
 #include <stdint.h>
 
-typedef enum {
-    // S3TC / DXT (DirectX, OpenGL, Vulkan)
-    GPU_TEXTURE_COMPRESSED_DXT1,   // BC1
-    GPU_TEXTURE_COMPRESSED_DXT3,   // BC2
-    GPU_TEXTURE_COMPRESSED_DXT5,   // BC3
+/*
 
-    // RGTC (Vulkan, OpenGL)
-    GPU_TEXTURE_COMPRESSED_RGTC1,  // BC4
-    GPU_TEXTURE_COMPRESSED_RGTC2,  // BC5
+00000000 00000000 00000000 00000000  
 
-    // BPTC (Vulkan, OpenGL)
-    GPU_TEXTURE_COMPRESSED_BPTC_RGB,   // BC7
-    GPU_TEXTURE_COMPRESSED_BPTC_FLOAT, // BC6H
+first two bits are used to determine graphics api for format
+whatever is placed into format is determined by the graphics api / end user
+*/
 
-    GPU_TEXTURE_UNCOMPRESSED_I_RGB8888,     // rgb with alpha
-    GPU_TEXTURE_UNCOMPRESSED_I_RGB888,      // rgb with alpha
-    GPU_TEXTURE_UNCOMPRESSED_I_RGB16161616, // integer hdr
-    GPU_TEXTURE_UNCOMPRESSED_I_GS8,         // 8 bit grayscale 
-    GPU_TEXTURE_UNCOMPRESSED_I_GSA88,        // 8 bit grayscale with alpha
-    GPU_TEXTURE_UNCOMPRESSED_I_GSA81,        // 8 bit grayscale with one bit alpha 
-    GPU_TEXTURE_UNCOMPRESSED_I_ILU8,         // lumanance texture no alpha
-    GPU_TEXTURE_UNCOMPRESSED_I_ILUA88,       // lumanance texture with 8 bit alpha
-    GPU_TEXTURE_UNCOMPRESSED_I_ILUA81,       // lumanance texture with 1 bit alpha
-
-    // note if uncompressed, always assume 16 bit float
-    GPU_TEXTURE_UNCOMPRESSED_F_RGB,         // floating point hdr
-    GPU_TEXTURE_UNCOMRPESSED_F_GS,          // floating point grayscale no alpha
-    GPU_TEXTURE_UNCOMRPESSED_F_GSA,         // floating point grayscale wiht alpha   
-    GPU_TEXTURE_UNCOMRPESSED_F_ILU,         // floating point grayscale wiht alpha   
-    GPU_TEXTURE_UNCOMRPESSED_F_ILUA,         // floating point grayscale wiht alpha   
-    
-    
-    GPU_TEXTURE_COMPRESSED_MAX // Sentinel value
-} texture_formats;
-
-
-typedef enum {
-    TEXTURE_FLAG_IS_PIXELART       = 1 << 0,  
-    TEXTURE_FLAG_TRILINEAR         = 1 << 1,  
-    TEXTURE_FLAG_CLAMP_S           = 1 << 2,  
-    TEXTURE_FLAG_CLAMP_T           = 1 << 3,  
-    TEXTURE_FLAG_ANISOTROPIC       = 1 << 4,  
-    TEXTURE_FLAG_IS_COMPRESSED     = 1 << 5,  // checking for if using bcx compression 
-    TEXTURE_FLAG_IS_NORMAL_MAP     = 1 << 6,  
-    TEXTURE_FLAG_NO_MIPMAP         = 1 << 7,  // disables mipmapping
-    TEXTURE_FLAG_PREGEN_MIPMAP     = 1 << 8,  // pregenerated mip maps are stored
-    TEXTURE_FLAG_NO_LOD            = 1 << 9,  
-    TEXTURE_FLAG_SRGB              = 1 << 10, 
-    TEXTURE_FLAG_PRESRGB           = 1 << 11, 
-    TEXTURE_FLAG_IS_ZIMG_PRECOMP   = 1 << 12, 
-    TEXTURE_FLAG_IS_TEXTURE_ARRAY  = 1 << 13,
-
-    // Depth/Stencil/Framebuffer modes (occupy bits 14-15)
-    TEXTURE_FLAG_DEPTHMODE_NONE          = 0 << 14,
-    TEXTURE_FLAG_DEPTHMODE_DEPTH         = 1 << 14,
-    TEXTURE_FLAG_DEPTHMODE_STENCIL       = 2 << 14,
-    TEXTURE_FLAG_DEPTHMODE_DEPTH_STENCIL = 3 << 14,
-
-    TEXTURE_FLAG_DEPTHMODE_MASK          = 3 << 14, // to extract the mode
+typedef enum
+{
+	TF_CUBEMAP = 1 << 0,
+	TF_CUBEMAP_ARRAY = 1 << 1,
+	TF_3D_OR_ARRAY = 1 << 2,
+	
 } texture_flags;
 
-
-typedef struct 
+typedef enum 
 {
-    char name[32];             // Texture name (optional)
-	
-    uint32_t width;            // Texture width
-    uint32_t height;           // Texture height
-    uint32_t depth;            // 3D texture depth (optional, 0 if 2D)
-	
-    uint32_t flags;
-    
-    uint8_t mip_count;         // Number of mipmap levels
-    uint8_t image_format;       // Texture format (e.g., RGBA8, BC7)
-    uint16_t image_count;
+	TF_R8,
+	TF_RG8,
+	TF_RGB233,
+	TF_RGB332,
+	TF_RGB8,
+	TF_RGB565,
+	TF_RGBA8,
+	TF_RGBA4444.
+	TF_RGBA5551.
+	TF_RGBA1010102.
+	TF_R16F,
+	TF_RG16F,
+	TF_RGB16F,
+	TF_RGBA16F,
+	TF_RGBA16,
+	TF_BCN1,
+	TF_BCN2,
+	TF_BCN3,
+	TF_BCN5,
+	TF_BCN6N,
+	TF_BCN7,
+	TF_ETC1,
+	TF_ETC2,
+	TF_ETC4,
+	TF_ASTC,	// pray
+} texture_formats;
 
-    uint32_t size;             // Total size of the texture data in bytes in order to access the next image, after decompression, the 
-} texture_info;
-
-// material file storage system
 typedef struct
 {
-	char magic[4]; 	// MTSS
+	uint32_t length; // size of initial image
+	uint32_t offset; // reletive
+} additional_metadata;
+
+// textufe file storage system
+typedef struct
+{
+	char magic[4]; 	// TFSS
+
+	uint32_t flags;
+    uint32_t width;            // Texture width
+    uint32_t height;           // Texture height
+	uint32_t depth;			  // Texture depth or array
 	
-	uint32_t texture_count;
-	texture_info* textures;
+	uint8_t format;	
+	uint8_t compression;
+	uint8_t mip_count;
+	uint8_t face_count;
 	
+	// size is calculated by wh_dl[2] * mip_count
+	// note zero mip map means no mip map and 1 is one mipmap so on and so on, but zero or 1 depth or layer is only a single image
+	// additional_metadata* image_offset
+	
+	// allignment is calculated the same way as ktx for the most part
+	// note if compressed, this must be decrypted before the this can be handled
+	// mip maps are stored side by side to the texture data
+	// if the texture size is uneven in any way, it will attempt to allign 
+	/*
+		allign( lcm(format_size, 4) ) mip pad
+		for array index in max(1, array)
+		{
+			for face in face count
+			{
+				for mip in mipcount
+					for d / mip for h / mip for w / mip
+						bytes data[format_size];
+			}
+		}
+	*/
 } TFSS;
 
 #endif

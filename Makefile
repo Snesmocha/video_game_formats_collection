@@ -9,56 +9,29 @@ ifndef verbose
 endif
 
 ifeq ($(config),debug)
-  tfss_test_tools_config = debug
-  stb_image_config = debug
-  tfss_static_tools_config = debug
-  tfss_shared_tools_config = debug
+  tfss_config = debug
 
 else ifeq ($(config),release)
-  tfss_test_tools_config = release
-  stb_image_config = release
-  tfss_static_tools_config = release
-  tfss_shared_tools_config = release
+  tfss_config = release
 
 else
   $(error "invalid configuration $(config)")
 endif
 
-PROJECTS := tfss_test_tools stb_image tfss_static_tools tfss_shared_tools
+PROJECTS := tfss
 
 .PHONY: all clean help $(PROJECTS) 
 
 all: $(PROJECTS)
 
-tfss_test_tools: tfss_static_tools
-ifneq (,$(tfss_test_tools_config))
-	@echo "==== Building tfss_test_tools ($(tfss_test_tools_config)) ===="
-	@${MAKE} --no-print-directory -C . -f tfss_test_tools.make config=$(tfss_test_tools_config)
-endif
-
-stb_image:
-ifneq (,$(stb_image_config))
-	@echo "==== Building stb_image ($(stb_image_config)) ===="
-	@${MAKE} --no-print-directory -C . -f stb_image.make config=$(stb_image_config)
-endif
-
-tfss_static_tools: stb_image
-ifneq (,$(tfss_static_tools_config))
-	@echo "==== Building tfss_static_tools ($(tfss_static_tools_config)) ===="
-	@${MAKE} --no-print-directory -C . -f tfss_static_tools.make config=$(tfss_static_tools_config)
-endif
-
-tfss_shared_tools: stb_image
-ifneq (,$(tfss_shared_tools_config))
-	@echo "==== Building tfss_shared_tools ($(tfss_shared_tools_config)) ===="
-	@${MAKE} --no-print-directory -C . -f tfss_shared_tools.make config=$(tfss_shared_tools_config)
+tfss:
+ifneq (,$(tfss_config))
+	@echo "==== Building tfss ($(tfss_config)) ===="
+	@${MAKE} --no-print-directory -C . -f tfss.make config=$(tfss_config)
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C . -f tfss_test_tools.make clean
-	@${MAKE} --no-print-directory -C . -f stb_image.make clean
-	@${MAKE} --no-print-directory -C . -f tfss_static_tools.make clean
-	@${MAKE} --no-print-directory -C . -f tfss_shared_tools.make clean
+	@${MAKE} --no-print-directory -C . -f tfss.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -70,9 +43,6 @@ help:
 	@echo "TARGETS:"
 	@echo "   all (default)"
 	@echo "   clean"
-	@echo "   tfss_test_tools"
-	@echo "   stb_image"
-	@echo "   tfss_static_tools"
-	@echo "   tfss_shared_tools"
+	@echo "   tfss"
 	@echo ""
 	@echo "For more information, see https://github.com/premake/premake-core/wiki"

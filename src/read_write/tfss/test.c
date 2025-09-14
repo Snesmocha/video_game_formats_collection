@@ -1,12 +1,15 @@
 #include "tfss_read_write.h"
 #include <stdio.h>
+#include <stb_image.h>
+
+#define TEST_READ
 
 #ifdef TEST_READ
 int main() {
     const char* tfss_file = "test.tfss";
     const char* reference_png = "SamplePNGImage_30mbmb.png";
 
-    int w_tfss = 0, h_tfss = 0, bpp_tfss = 0;
+    
     int w_ref = 0, h_ref = 0, bpp_ref = 0;
 
     // Load the reference image
@@ -25,14 +28,19 @@ int main() {
         stbi_image_free(expected_data);
         return 1;
     }
-
+	
+	uint32_t whd[3] = {0,0,0};
+	uint32_t flag = 0;
+	uint8_t format = 0;
+	uint8_t mip_count = 0;
+	uint8_t face_count = 0;
     // Load TFSS image
-    load_tfss_index(tfss_file, image_data, &bpp_tfss, &w_tfss, &h_tfss, 0);
+    read_tfss(tfss_file, image_data, &flag, whd, &format, &mip_count, &face_count);
 
-    printf("TFSS image: %dx%d, bpp=%d\n", w_tfss, h_tfss, bpp_tfss);
+    printf("TFSS image: %dx%d, bpp=%d\n", whd[0], whd[1], 0);
 
     // Sanity check
-    if (w_tfss != w_ref || h_tfss != h_ref || bpp_tfss != bpp_ref) {
+    if (whd[0] != w_ref || whd[1] != h_ref ) {
         fprintf(stderr, "Size or format mismatch between images\n");
     }
 
@@ -58,7 +66,7 @@ int main() {
 }
 
 #elif defined(TEST_WRITE)
-int main() {
+int main(void) {
     int width = 0;
     int height = 0;
     int bpp = 3; // RGB
@@ -72,10 +80,115 @@ int main() {
     }
 
     //generate_checkerboard(data, width, height, bpp);
-    save_tfss_zstd("test.tfss", data, bpp, width, height, compression_level);
+	uint32_t whd[3] = {width, height, 0};
+    write_tfss("test.tfss", data, 15, whd, TF_RGBA8, 0, compression_level, 0, 0);
     stbi_image_free(data);
 
     printf("test.tfss saved successfully!\n");
+    return 0;
+}
+
+#endif
+
+
+#ifdef AAAA
+
+#define WIDTH 128
+#define HEIGHT 512
+
+int main(void) {
+    int width = WIDTH;
+    int height = HEIGHT;
+
+    // Each pixel is 2 bytes (RGBA4444)
+    uint16_t* data = malloc(width * height * sizeof(uint16_t));
+    if (!data) {
+        fprintf(stderr, "Failed to allocate image memory\n");
+        return 1;
+    }
+
+    for (int y = 0; y < height; y++) {
+        float fy = (float)y / (height - 1);
+        for (int x = 0; x < width; x++) {
+            float fx = (float)x / (width - 1);
+
+            // Compute RG->GB gradient in 0-15 range (4 bits)
+            uint8_t r4 = (uint8_t)((1.0f - fx) * 15.0f); // red decreases left->right
+            uint8_t g4 = (uint8_t)(((1.0f - fx) * (1.0f - fy) + fx * fy) * 15.0f); // blended green
+            uint8_t b4 = (uint8_t)(fx * 15.0f);        // blue increases left->right
+            uint8_t a4 = 0xF;                          // fully opaque
+
+            // Pack into RGBA4444: rrrr gggg bbbb aaaa
+            uint16_t pixel = (r4 << 12) | (g4 << 8) | (b4 << 4) | a4;
+            data[y * width + x] = pixel;
+        }
+    }
+
+    uint32_t whd[3] = {width, height, 0};
+    int compression_level = 22;
+
+    // Assuming write_tfss can handle RGBA4444
+    write_tfss("test.tfss", (uint8_t*)data, 0, whd, TF_RGBA4444, 0, compression_level, 0);
+
+    free(data);
+    printf("test.tfss saved successfully!\n");
+    return 0;
+}
+
+#endif
+
+
+#ifdef BBBB
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdint.h>
+
+#define WIDTH 128
+#define HEIGHT 512
+#define DEPTH 32   // new depth dimension
+
+int main(void) {
+    int width = WIDTH;
+    int height = HEIGHT;
+    int depth = DEPTH;
+
+    // Each pixel is 4 bytes (RGBA8)
+    uint8_t* data = malloc(width * height * depth * 4);
+    if (!data) {
+        fprintf(stderr, "Failed to allocate image memory\n");
+        return 1;
+    }
+
+    for (int z = 0; z < depth; z++) {
+        float fz = (float)z / (depth - 1);  // normalize depth
+        for (int y = 0; y < height; y++) {
+            float fy = (float)y / (height - 1);
+            for (int x = 0; x < width; x++) {
+                float fx = (float)x / (width - 1);
+
+                // Compute gradient in 0-255 range
+                uint8_t r = (uint8_t)((1.0f - fx) * 255.0f);             // red decreases left->right
+                uint8_t g = (uint8_t)(((1.0f - fx) * (1.0f - fy) + fx * fy) * 255.0f); // green blend
+                uint8_t b = (uint8_t)(fz * 255.0f);                      // blue changes with depth
+                uint8_t a = 0xFF;                                        // fully opaque
+
+                size_t index = ((z * height + y) * width + x) * 4;
+                data[index + 0] = r;
+                data[index + 1] = g;
+                data[index + 2] = b;
+                data[index + 3] = a;
+            }
+        }
+    }
+
+    uint32_t whd[3] = {width, height, depth};
+    int compression_level = 22;
+
+    // Assuming write_tfss can handle RGBA8 and 3D data
+    write_tfss("test_3d.tfss", data, 0, whd, TF_RGBA8, 0, compression_level, 0);
+
+    free(data);
+    printf("test_3d.tfss saved successfully!\n");
     return 0;
 }
 
