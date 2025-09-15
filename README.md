@@ -51,23 +51,22 @@ Image data is stored sequentially after the header:
 
 ## Example Layout
 
-Header (TFSS)
-├─ Width, Height, Depth, Format, Compression, MipCount, FaceCount
-├─ Offsets Table
-Image Data
-├─ Layer 0
-│ ├─ Mip 0
-│ ├─ Mip 1
-│ └─ Mip 2
-├─ Layer 1
-│ ├─ Mip 0
-│ ├─ Mip 1
-│ └─ Mip 2
-└─ Layer 2
-├─ Mip 0
-├─ Mip 1
-└─ Mip 2
-
+- **Header (TFSS)**
+  - Width, Height, Depth, Format, Compression, MipCount, FaceCount
+  - Offsets Table
+- **Image Data**
+  - Layer 0
+    - Mip 0
+    - Mip 1
+    - Mip 2
+  - Layer 1
+    - Mip 0
+    - Mip 1
+    - Mip 2
+  - Layer 2
+    - Mip 0
+    - Mip 1
+    - Mip 2
 > **Important:** Mipmaps always follow the texture they belong to.  
 > For `mip_count = 0`, only the base image is stored.
 
