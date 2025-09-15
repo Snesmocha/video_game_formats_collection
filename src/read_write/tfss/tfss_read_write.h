@@ -52,6 +52,9 @@ typedef enum
 } tfss_formats;
 
 typedef int (*mipmapper)(const uint8_t* in, uint8_t* out, uint32_t bpp, uint32_t wh[2]);
+
+int mipmap_generic(const uint8_t* in, uint8_t* out, uint32_t bpp, uint32_t wh[2], uint8_t level);
+
 int write_tfss(const char* name, char* data, uint32_t flags, uint32_t wh_dl[3], uint8_t format, uint8_t mip_count, uint8_t compression, uint8_t faces, mipmapper mipmap);
 int read_tfss(const char* name, char* out, uint32_t* flags, uint32_t wh_dl[3], uint8_t* format, uint8_t* mip_count, uint8_t* faces);
 

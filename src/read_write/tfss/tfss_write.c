@@ -162,6 +162,61 @@ static inline size_t bytes_per_pixel(tfss_formats fmt)
     }
 }
 
+int mipmap_generic(const uint8_t* in, uint8_t* out,
+                   uint32_t bpp, uint32_t wh[2], uint8_t level)
+{
+    if (!in || !out || bpp == 0) return -1;
+    if (level == 0) {
+        // Just copy input to output
+        memcpy(out, in, wh[0] * wh[1] * bpp);
+        return 0;
+    }
+
+    uint32_t base_w = wh[0];
+    uint32_t base_h = wh[1];
+
+    // Compute mip dimensions
+    uint32_t new_w = base_w >> level;
+    uint32_t new_h = base_h >> level;
+    if (new_w == 0) new_w = 1;
+    if (new_h == 0) new_h = 1;
+
+    for (uint32_t y = 0; y < new_h; y++) {
+        for (uint32_t x = 0; x < new_w; x++) {
+
+            // Map destination pixel (x,y) to a block in the original image
+            uint32_t src_x = x << level;
+            uint32_t src_y = y << level;
+            uint32_t block_size = 1u << level;
+
+            // Accumulate over block_size × block_size region
+            uint32_t counts = 0;
+            uint32_t sum[16]; // supports up to 16 channels (safe for HDR/float formats)
+            memset(sum, 0, sizeof(sum));
+
+            for (uint32_t by = 0; by < block_size; by++) {
+                if (src_y + by >= base_h) break;
+                for (uint32_t bx = 0; bx < block_size; bx++) {
+                    if (src_x + bx >= base_w) break;
+
+                    const uint8_t* src = in + ((src_y + by) * base_w + (src_x + bx)) * bpp;
+                    for (uint32_t c = 0; c < bpp; c++)
+                        sum[c] += src[c];
+                    counts++;
+                }
+            }
+
+            uint8_t* dst = out + (y * new_w + x) * bpp;
+            for (uint32_t c = 0; c < bpp; c++)
+                dst[c] = (uint8_t)(sum[c] / counts);
+        }
+    }
+
+    // Update dimensions
+    wh[0] = new_w;
+    wh[1] = new_h;
+    return 0;
+}
 
 // assumes images are placed side by side
 // pedantically 0 and 1 are both just one layer 

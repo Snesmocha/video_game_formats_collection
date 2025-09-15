@@ -71,24 +71,7 @@ typedef struct
 	
 	// size is calculated by wh_dl[2] * mip_count
 	// note zero mip map means no mip map and 1 is one mipmap so on and so on, but zero or 1 depth or layer is only a single image
-	// additional_metadata* image_offset
-	
-	// allignment is calculated the same way as ktx for the most part
-	// note if compressed, this must be decrypted before the this can be handled
-	// mip maps are stored side by side to the texture data
-	// if the texture size is uneven in any way, it will attempt to allign 
-	/*
-		allign( lcm(format_size, 4) ) mip pad
-		for array index in max(1, array)
-		{
-			for face in face count
-			{
-				for mip in mipcount
-					for d / mip for h / mip for w / mip
-						bytes data[format_size];
-			}
-		}
-	*/
+	additional_metadata* offsets;
 } TFSS;
 
 #endif
