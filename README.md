@@ -51,3 +51,31 @@ Image data is stored sequentially after the header:
 
 ## Example Layout
 
+Header (TFSS)
+├─ Width, Height, Depth, Format, Compression, MipCount, FaceCount
+├─ Offsets Table
+Image Data
+├─ Layer 0
+│ ├─ Mip 0
+│ ├─ Mip 1
+│ └─ Mip 2
+├─ Layer 1
+│ ├─ Mip 0
+│ ├─ Mip 1
+│ └─ Mip 2
+└─ Layer 2
+├─ Mip 0
+├─ Mip 1
+└─ Mip 2
+
+> **Important:** Mipmaps always follow the texture they belong to.  
+> For `mip_count = 0`, only the base image is stored.
+
+---
+
+## Notes
+
+- Zero mipmaps (`mip_count = 0`) means only the base image is stored.  
+- Single-layer textures (`depth = 1`) contain only one image or cubemap face sequence.  
+- Sequential storage ensures linear reading of all mipmaps or layers.  
+- Offset table allows random access to specific mipmaps, faces, or layers.
