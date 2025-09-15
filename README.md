@@ -18,9 +18,11 @@ The TFSS file begins with a fixed-size header:
 | `compression`| 1 byte    | Compression method used on texture data (0 = none, other values = compressed). |
 | `mip_count`  | 1 byte    | Number of mipmap levels. 0 = no mipmaps, 1 = one mipmap level, etc.        |
 | `face_count` | 1 byte    | Number of faces (1 for 2D textures, 6 for cubemaps).                       |
-| `offsets`    | variable  | Array of `additional_metadata` structures indicating the offset of each image block. |
+| `offsets`    | 8 * i bytes | Array of `additional_metadata` structures indicating the offset of each image block. |
+
 
 > **Note:** `offsets` allows fast seeking to individual mipmaps, array layers, or faces.
+> `offsets` store primarily compressed sizes, they are to be packed together as tightly as possible each bit of data without a complex packing schema
 
 ---
 
