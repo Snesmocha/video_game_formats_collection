@@ -1,0 +1,80 @@
+// structures can be defined as such 
+// if struct or enum is defined in an ngss, or if it is defined as ngsh (nonserialized generic storage header} then #include can be defined in #define struct
+// the data is defined as such so that it can easilly be serialized
+#define struct
+
+/*
+
+base types include
+
+str
+char
+u s 8
+u s f 16
+u s f 32
+u s f 64
+
+*/
+
+#include "matrix.ngsh"
+
+// can be defined single line
+vec2{f32 x, y}
+
+// or double line
+vec3
+{
+	f32 x
+	f32 y
+	f32 z
+}
+
+img_path {
+	str path = "default_path" // a default path can be defined as such 
+}
+
+
+// enums are only defined as c style enums
+#define enum
+
+test_enum
+{
+	T1,
+	T2,
+	T3,
+	T4
+}
+
+// an ngss can also only define values if no headers are used
+#define data
+
+
+// cannot be longer than 64 characters
+// may expand to 128 later on
+// anything longer will be truncated
+character
+{
+	vec2 position = (5, 3)
+	img_path path // using the generic value
+}
+
+dialogue
+{
+	str test = "hello world"
+}
+
+// arbatrary data test
+yet_to_exist {
+	str arbatrary_save_data = null
+	u32 arbatrary_data = null
+	
+}
+
+// arrays are not dynamic, they can only be resolved at compile time
+// if no number is placed it can be extended but once the array is compiled into binary
+// the array remains this size
+arrays
+{
+	s32 test[] = {5, 9, 18}
+	str test2[2] = {"hello 1", "hello 2"} 
+}

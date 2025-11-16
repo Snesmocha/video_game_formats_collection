@@ -5,21 +5,11 @@
 
 
 
-typedef enum 
-{
-    // Vertex attribute formats (e.g., position, normal, etc.)
-	VF_U8,
-	VF_U16,
-	VF_U32,
-	VF_S8,
-	VF_S16,
-	VF_S32,
-} VFSS_format;
 
 typedef struct 
 {
-	char name[32];         // Optional buffer name
-	uint32_t vertex_size;  // Size of each vertex in bytes
+	char name[32];         // buffer name
+	uint32_t vertex_size;  // Size of each vertex in vertex elements
 	uint32_t index_size;   // Total size of index buffer
 } VFSS_buffer_info;
 
@@ -30,13 +20,21 @@ typedef struct
 	char magic[4];  				// "VFSS"
 	uint8_t flags;  				// Flags for compression, endianess, etc.
 
-	uint8_t vertex_attr_count; 		// Number of attributes (max 64)
+	uint8_t vertex_attr_count;
 	struct {
-		uint8_t flags; 
-		uint8_t format;      		// Float3, Byte4, etc.
-		uint8_t offset;      		// Offset in each vertex
-		uint8_t padding;     		// Alignment padding
-	} attributes[64];
+		char name[4];
+		uint8_t format; // bits 1-2 : 0 for 1 byte, 1 for 2 bytes, 2 for 4 bytes, 3 for 8 bytes (avoid if possible)
+						// third bit: 	   is floating point
+						// forth bit:      is signed
+						// bits 5-6 : 0 is none, 1 = 10*3_2, 2 = 10_11*2, 3 is undefined
+		uint8_t offset;
+		uint8_t component_count;
+		uint8_t padding;
+		uint8_t chain_flags; // so long as the byte format matches, 
+							 // attributes can be chained but read as seperate like norm tan 
+							 // or to attach an additional value to better pack values together such as xyz in f32 + u16 uv
+
+	} attributes;
 
 	uint8_t index_type; 			// VFSS_format must be unsigned
 
