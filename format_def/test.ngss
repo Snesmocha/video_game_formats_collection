@@ -1,7 +1,7 @@
 // structures can be defined as such 
-// if struct or enum is defined in an ngss, or if it is defined as ngsh (nonserialized generic storage header} then #include can be defined in #define struct
+// if struct or enum is defined in an ngss, or if it is defined as ngsh (nonserialized generic storage header} then #include can be defined in #define header 
 // the data is defined as such so that it can easilly be serialized
-#define struct
+#define header
 
 /*
 
@@ -19,25 +19,41 @@ u s f 64
 #include "matrix.ngsh"
 
 // can be defined single line
-vec2{f32 x, y}
+struct vec2{f32 x, y}
 
 // or double line
-vec3
+struct vec3
 {
 	f32 x
 	f32 y
 	f32 z
 }
 
-img_path {
+struct default img_path {
 	str path = "default_path" // a default path can be defined as such 
 }
 
+// enums can be defined with enum keyword, they will always default to i32 and increment by 1 starting from zero similar to c
+// enums are namespace scopped and are typed so in order to access must either be enum type or of the same type 
+// test_enum::T1 
+// syntax to access ^^
+enum test_enum
+{
+	T1,
+	T2,
+	T3,
+	T4
+}
 
-// enums are only defined as c style enums
-#define enum
+enum test_enum_2 : u8
+{
+	T1,
+	T2,
+	T3,
+	T4
+}
 
-test_enum
+enum test_enum_2 : u8
 {
 	T1,
 	T2,
@@ -49,22 +65,32 @@ test_enum
 #define data
 
 
+// a region can be arbatrarily defined to define sections of data to jump to as needed, both as optimimzation and as a serialization technique
+
+// when no region is defined, a poitner will be given to the location of the exact point, unless if the ngss file is defined, this is not recomended 
+i32 data = 5;
+i64 data2; // these will be grouped together with an arbatrary region name 
+
 // cannot be longer than 64 characters
 // may expand to 128 later on
 // anything longer will be truncated
-character
+region character
 {
 	vec2 position = (5, 3)
 	img_path path // using the generic value
 }
 
-dialogue
+
+// will be grouped into anothehr automatic region in relation to data here
+i32 data_c_test = "hi"
+
+region dialogue
 {
 	str test = "hello world"
 }
 
 // arbatrary data test
-yet_to_exist {
+region yet_to_exist {
 	str arbatrary_save_data = null
 	u32 arbatrary_data = null
 	
@@ -73,8 +99,11 @@ yet_to_exist {
 // arrays are not dynamic, they can only be resolved at compile time
 // if no number is placed it can be extended but once the array is compiled into binary
 // the array remains this size
-arrays
+region arrays
 {
 	s32 test[] = {5, 9, 18}
 	str test2[2] = {"hello 1", "hello 2"} 
 }
+
+
+
