@@ -16,18 +16,18 @@ must be static
 
 ## core keywords
 
-## header specific
+### header specific
 
 - enum
 - struct
 
-## data specific
+### data specific
 
 - region
   - dynamic
   - large
 
-## macros
+### macros
 
 these macros may be defined within the header as the following
 ```c
@@ -283,7 +283,9 @@ more to be specified cause i don't know what else to do
 large specifies that the blob may be a large piece of data, such as possibly a binary blob and should be treated with additional care in import
 
 
-# sgss and sgsh
+# serialized mode
+
+
 
 
 
